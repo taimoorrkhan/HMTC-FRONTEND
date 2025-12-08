@@ -1,65 +1,153 @@
-import Image from "next/image";
+"use client";
 
+import React from "react";
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+	const [taskTitle, setTaskTitle] = React.useState("");
+	const [description, setDescription] = React.useState("");
+	const [status, setStatus] = React.useState("Not Started");
+	const [dueDate, setDueDate] = React.useState("");
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (taskTitle.trim() === "") {
+			alert("Task Title is required");
+			return;
+		}
+		if (dueDate && isNaN(Date.parse(dueDate))) {
+			alert("Invalid Due Date");
+			return;
+		}
+		if (dueDate && new Date(dueDate) < new Date()) {
+			alert("Due Date cannot be in the past");
+			return;
+		}
+		const res = await fetch(
+			"http://localhost:5160/api/TaskItem/createTask",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					title: taskTitle,
+					description,
+					Taskstatus: status,
+					dueDateTime: dueDate ? new Date(dueDate) : null,
+				}),
+			}
+		);
+		if (!res.ok) {
+			alert("Failed to add task");
+			return;
+		}
+		const data = await res.json();
+		console.log(data.task);
+		setTaskTitle("");
+		setDescription("");
+		setStatus("Not Started");
+		setDueDate("");
+		alert(
+			"Task added successfully! \nTask ID: " +
+				data.task.id +
+				"\nTask Title: " +
+				data.task.title +
+				"\nDescription: " +
+				data.task.description +
+				"\nStatus: " +
+				data.task.taskstatus +
+				"\nDue Date: " +
+				data.task.dueDateTime
+		);
+	};
+	return (
+		<div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+			<main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+				<h1 className="text-5xl font-extrabold text-zinc-900 dark:text-white sm:text-6xl">
+					Add Task
+				</h1>
+				<form className="w-full mt-8">
+					<div className="mb-4">
+						<label
+							className="block text-zinc-700 dark:text-zinc-300 text-sm font-bold mb-2"
+							htmlFor="task"
+						>
+							Task Title
+						</label>
+						<input
+							value={taskTitle}
+							onChange={(e) =>
+								setTaskTitle(e.target.value)
+							}
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-300 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-zinc-800"
+							id="task"
+							type="text"
+							placeholder="Enter task title"
+							required
+						/>
+					</div>
+					<div className="mb-6">
+						<label
+							className="block text-zinc-700 dark:text-zinc-300 text-sm font-bold mb-2"
+							htmlFor="description"
+						>
+							Description
+						</label>
+						<textarea
+							value={description}
+							onChange={(e) =>
+								setDescription(e.target.value)
+							}
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-300 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-zinc-800"
+							id="description"
+							placeholder="Enter task description"
+						></textarea>
+					</div>
+					<div className="text-xs text-zinc-500 mt-1">
+						<label
+							className="block text-zinc-700 dark:text-zinc-300 text-sm font-bold mb-2"
+							htmlFor="description"
+						>
+							Task Status
+						</label>
+						<select
+							value={status}
+							onChange={(e) =>
+								setStatus(e.target.value)
+							}
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-300 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-zinc-800"
+							id="status"
+							required
+						>
+							<option>Not Started</option>
+							<option>InProgress</option>
+							<option>Completed</option>
+							<option>On Hold</option>
+						</select>
+					</div>
+					<div className="text-xs text-zinc-500 mt-1">
+						<label className="block text-zinc-700 dark:text-zinc-300 text-sm font-bold mb-2">
+							Due Date
+						</label>
+						<input
+							value={dueDate}
+							onChange={(e) =>
+								setDueDate(e.target.value)
+							}
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-300 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-zinc-800"
+							type="date"
+						/>
+					</div>
+					<div className=" m-5 flex items-center justify-between">
+						<button
+							onClick={handleSubmit}
+							className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+							type="button"
+						>
+							Add Task
+						</button>
+					</div>
+				</form>
+			</main>
+		</div>
+	);
 }
