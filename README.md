@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# My App — Setup & Documentation
 
-## Getting Started
+Welcome to **My App**,  frontend and an ASP.NET Core (.NET 10) backend with EF Core. This README shows how to run the frontend and the backend locally.
 
-First, run the development server:
+---
 
-```bash
+## Frontend (Next.js)
+
+This repository uses the Next.js App Router (the `app/` directory).
+
+### Requirements
+
+- Node.js (16+ recommended)
+
+### Install & run
+
+```powershell
+# Clone the repository
+git clone ....
+cd my-ap
+
+# Install dependencies
+npm install
+
+# Start the Next.js development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the frontend at: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> If your backend runs on `http://localhost:5160`, start it first so the frontend can communicate with it.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Project structure (important files)
 
-## Learn More
+```
+app/                # Next.js App Router routes
+  globals.css
+  layout.tsx
+  page.tsx
+public/             # Static assets
+next.config.ts
+package.json
+README.md
+```
 
-To learn more about Next.js, take a look at the following resources:
+### API communication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The frontend sends requests to the backend API. Example endpoint used in this project:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+POST http://localhost:5160/api/TaskItem/createTask
+```
 
-## Deploy on Vercel
+Example JSON payload:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "title": "My Task",
+  "description": "Task details",
+  "taskstatus": "Pending",
+  "dueDateTime": "2025-01-10T10:00:00Z"
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Backend (.NET 10 + EF Core)
+
+The backend is an ASP.NET Core Web API using Entity Framework Core and SQL Server (code-first).
+
+### Requirements
+
+- .NET 10 SDK
+- SQL Server (or another provider configured in `appsettings.json`)
+
+### Configure database
+
+Edit `HMCT/appsettings.json` (create the `HMCT/` folder if your backend source is colocated there) and add your connection string under `ConnectionStrings:DefaultConnection`.
+
+Example `appsettings.json` snippet:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=MyDb;Trusted_Connection=True;"
+  }
+}
+```
+
+### Restore packages and run migrations
+
+```powershell
+cd HMCT
+dotnet restore
+
+# Add a migration (only if models changed)
+dotnet ef migrations add InitialCreate
+
+# Apply migrations
+dotnet ef database update
+
+# Run the backend
+dotnet run
+```
+
+The API will be available at: http://localhost:5160 (by default)
+
+---
+
+## Tests
+
+To run the unit tests for the backend:
+
+```powershell
+cd HMCT.Tests
+dotnet test
+```
+
+> Note: one test is expected to pass and one to fail (intentional) 
+
+---
+
+
+
+## Ready
+
+Start the backend (if separate) and then the frontend:
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:5160`
+
