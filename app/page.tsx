@@ -12,15 +12,29 @@ export default function Home() {
 		if (taskTitle.trim() === "") {
 			alert("Task Title is required");
 			return;
-		}
+    }
+    if(taskTitle.length > 100 || description.length > 250 || taskTitle.length< 3) {
+      alert("Task Title must be between 3 and 100 characters and Description must be less than 250 characters");
+      return;
+    }
 		if (dueDate && isNaN(Date.parse(dueDate))) {
 			alert("Invalid Due Date");
+			return;
+		}
+		if (!dueDate) {
+			alert("Due Date is required");
 			return;
 		}
 		if (dueDate && new Date(dueDate) < new Date()) {
 			alert("Due Date cannot be in the past");
 			return;
 		}
+		console.log({
+			taskTitle,
+			description,
+			status,
+			dueDate,
+		});
 		const res = await fetch(
 			"http://localhost:5160/api/TaskItem/createTask",
 			{
@@ -30,9 +44,9 @@ export default function Home() {
 				},
 				body: JSON.stringify({
 					title: taskTitle,
-					description,
-					Taskstatus: status,
-					dueDateTime: dueDate ? new Date(dueDate) : null,
+					description: description,
+					taskstatus: status,
+					dueDateTime: new Date(dueDate).toISOString(),
 				}),
 			}
 		);
@@ -114,14 +128,15 @@ export default function Home() {
 							onChange={(e) =>
 								setStatus(e.target.value)
 							}
-							className="shadow appearance-none border rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-300 leading-tight focus:outline-none focus:shadow-outline bg-white dark:bg-zinc-800"
-							id="status"
-							required
+							className="shadow appearance-none border rounded w-full py-2 px-3"
 						>
-							<option>Not Started</option>
-							<option>InProgress</option>
-							<option>Completed</option>
-							<option>On Hold</option>
+							<option value="Pending">Pending</option>
+							<option value="InProgress">
+								In Progress
+							</option>
+							<option value="Completed">
+								Completed
+							</option>
 						</select>
 					</div>
 					<div className="text-xs text-zinc-500 mt-1">
